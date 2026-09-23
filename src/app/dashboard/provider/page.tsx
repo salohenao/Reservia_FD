@@ -6,7 +6,9 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { appointmentService } from '@/services/appointmentService';
+import { serviceService } from '@/services/serviceService';
 import { Appointment } from '@/types/appointment';
+import { Service } from '@/types/service';
 import {
   INITIAL_PROVIDER_SERVICES,
   INITIAL_WEEKLY_SCHEDULE,
@@ -79,6 +81,37 @@ function ProviderDashboardContent() {
 
   // Services Catalog State
   const [services, setServices] = useState<ProviderCatalogService[]>(INITIAL_PROVIDER_SERVICES);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchServices = async () => {
+      if (!user) return;
+      try {
+        const data = await serviceService.getServicesByProvider(user.id);
+        if (isMounted) {
+          setServices(
+            data.map((service: Service): ProviderCatalogService => ({
+              id: service.id,
+              name: service.name,
+              durationMinutes: service.durationMinutes,
+              price: service.price,
+              reservationsCount: 0,
+              isActive: service.isActive,
+            }))
+          );
+        }
+      } catch (err) {
+        console.error('Error cargando servicios del proveedor:', err);
+      }
+    };
+
+    fetchServices();
+    return () => {
+      isMounted = false;
+    };
+  }, [user]);
+
   const [isAddServiceModalOpen, setIsAddServiceModalOpen] = useState(false);
   const [newServiceName, setNewServiceName] = useState('');
   const [newServiceDuration, setNewServiceDuration] = useState(45);
