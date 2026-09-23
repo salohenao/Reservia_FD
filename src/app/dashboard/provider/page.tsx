@@ -1,15 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import AuthGuard from '@/components/auth/AuthGuard';
+import { appointmentService } from '@/services/appointmentService';
+import { Appointment } from '@/types/appointment';
 import {
-  INITIAL_PROVIDER_APPOINTMENTS,
   INITIAL_PROVIDER_SERVICES,
   INITIAL_WEEKLY_SCHEDULE,
-  ProviderUpcomingAppointment,
   ProviderCatalogService,
   DaySchedule,
 } from '@/mocks/mockProviderData';
@@ -54,7 +54,28 @@ function ProviderDashboardContent() {
   const [feedbackMessage, setFeedbackMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Agenda State
-  const [appointments] = useState<ProviderUpcomingAppointment[]>(INITIAL_PROVIDER_APPOINTMENTS);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchAppointments = async () => {
+      if (!user) return;
+      try {
+        const data = await appointmentService.getProviderAppointments(user.id);
+        if (isMounted) {
+          setAppointments(data);
+        }
+      } catch (err) {
+        console.error('Error cargando citas del proveedor:', err);
+      }
+    };
+
+    fetchAppointments();
+    return () => {
+      isMounted = false;
+    };
+  }, [user]);
 
   // Services Catalog State
   const [services, setServices] = useState<ProviderCatalogService[]>(INITIAL_PROVIDER_SERVICES);
@@ -353,7 +374,12 @@ function ProviderDashboardContent() {
                   {/* Left: Avatar & Client info */}
                   <div className="flex items-center gap-3.5">
                     <div className="w-10 h-10 rounded-full bg-[#eafaf5] text-[#025a4e] font-bold text-xs flex items-center justify-center flex-shrink-0">
-                      {apt.initials}
+                      {apt.clientName
+                        .split(' ')
+                        .map((name) => name[0])
+                        .join('')
+                        .slice(0, 2)
+                        .toUpperCase()}
                     </div>
                     <div>
                       <h3 className="text-xs font-bold text-slate-900 leading-snug">
@@ -369,20 +395,28 @@ function ProviderDashboardContent() {
                   <div className="flex items-center gap-4 text-right">
                     <div>
                       <p className="text-xs font-bold text-slate-900 leading-snug">
-                        {apt.dayLabel}
+                        {apt.displayDate || apt.date}
                       </p>
                       <p className="text-[11px] text-slate-400 font-normal">
-                        {apt.timeLabel}
+                        {apt.displayTime || apt.time}
                       </p>
                     </div>
 
-                    {apt.status === 'Confirmada' ? (
+                    {apt.status === 'CONFIRMED' ? (
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold bg-[#eafaf5] text-[#025a4e]">
                         Confirmada
                       </span>
-                    ) : (
+                    ) : apt.status === 'PENDING' ? (
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold bg-[#fffbeb] text-[#b45309]">
                         Pendiente
+                      </span>
+                    ) : apt.status === 'CANCELLED' ? (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-600">
+                        Cancelada
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600">
+                        Completada
                       </span>
                     )}
                   </div>
