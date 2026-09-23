@@ -157,26 +157,50 @@ function ProviderDashboardContent() {
     });
   };
 
-  const handleAddService = (e: React.FormEvent) => {
+  const handleAddService = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newServiceName.trim()) return;
+    if (!newServiceName.trim() || !user) return;
 
-    const created: ProviderCatalogService = {
-      id: `prov_srv_${Date.now()}`,
-      name: newServiceName,
-      durationMinutes: newServiceDuration,
-      price: newServicePrice,
-      reservationsCount: 0,
-      isActive: true,
-    };
+    try {
+      const created = await serviceService.createService(
+        {
+          name: newServiceName,
+          description: 'Servicio profesional certificado.',
+          durationMinutes: newServiceDuration,
+          price: newServicePrice,
+          category: businessProfile.category || 'OTRO',
+        },
+        {
+          id: user.id,
+          name: user.name,
+          businessName: user.businessName,
+          city: user.city,
+        }
+      );
 
-    setServices((prev) => [...prev, created]);
-    setFeedbackMessage({
-      type: 'success',
-      text: `Servicio "${newServiceName}" agregado exitosamente al catálogo.`,
-    });
-    setNewServiceName('');
-    setIsAddServiceModalOpen(false);
+      setServices((prev) => [
+        {
+          id: created.id,
+          name: created.name,
+          durationMinutes: created.durationMinutes,
+          price: created.price,
+          reservationsCount: 0,
+          isActive: created.isActive,
+        },
+        ...prev,
+      ]);
+      setFeedbackMessage({
+        type: 'success',
+        text: `Servicio "${created.name}" agregado exitosamente al catálogo.`,
+      });
+      setNewServiceName('');
+      setIsAddServiceModalOpen(false);
+    } catch {
+      setFeedbackMessage({
+        type: 'error',
+        text: 'Ocurrió un error al guardar el servicio.',
+      });
+    }
   };
 
   // Schedule Handlers
