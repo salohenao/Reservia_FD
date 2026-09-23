@@ -87,7 +87,7 @@ function ProviderDashboardContent() {
   }, [user]);
 
   // Services Catalog State
-  const [services, setServices] = useState<ProviderCatalogService[]>(INITIAL_PROVIDER_SERVICES);
+  const [services, setServices] = useState<ProviderCatalogService[]>([]);
 
   useEffect(() => {
     let isMounted = true;
