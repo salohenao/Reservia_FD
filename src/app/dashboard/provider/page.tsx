@@ -52,6 +52,13 @@ function ProviderDashboardContent() {
     router.replace(`/dashboard/provider?tab=${tab}`, { scroll: false });
   };
 
+  const currentDateLabel = new Intl.DateTimeFormat('es-CO', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date());
+
   // Feedback Notification
   const [feedbackMessage, setFeedbackMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -233,7 +240,7 @@ function ProviderDashboardContent() {
                 {user?.businessName || businessProfile.businessName}
               </h1>
               <p className="text-xs text-slate-400 font-normal mt-1">
-                jueves, 10 de septiembre de 2026
+                {currentDateLabel}
               </p>
             </div>
 
@@ -259,10 +266,10 @@ function ProviderDashboardContent() {
               Citas hoy
             </span>
             <p className="font-serif text-3xl sm:text-4xl font-bold text-slate-900 leading-tight">
-              6
+              0
             </p>
             <p className="text-[11px] text-slate-400 mt-1">
-              4 confirmadas · 2 pendientes
+              0 confirmadas · 0 pendientes
             </p>
           </button>
 
@@ -277,10 +284,10 @@ function ProviderDashboardContent() {
               Esta semana
             </span>
             <p className="font-serif text-3xl sm:text-4xl font-bold text-slate-900 leading-tight">
-              24
+              0
             </p>
             <p className="text-[11px] text-emerald-600 font-medium mt-1">
-              ↑ 12% vs semana anterior
+              ↑ 0% vs semana anterior
             </p>
           </button>
 
@@ -295,7 +302,7 @@ function ProviderDashboardContent() {
               Ingresos est.
             </span>
             <p className="font-serif text-3xl sm:text-4xl font-bold text-slate-900 leading-tight">
-              $480K
+              $0K
             </p>
             <p className="text-[11px] text-slate-400 mt-1">
               Citas confirmadas hoy
